@@ -178,7 +178,7 @@ int main (int argc, char **argv)
     
     std:: cout << separator << std:: endl;
 
-    char* random_subsequence = new char[inputSize]; 
+    char* random_subsequence;// = new char[inputSize]; 
     char* outputText = new char[inputSize];
     char* msg = new char[inputSize]; // text buffer
 
@@ -256,14 +256,18 @@ int main (int argc, char **argv)
     }
 
     int output;
-    if ((output=open(args_cmd.outputFilePath, O_WRONLY)) == -1) {
+    if ((output=open(args_cmd.outputFilePath, O_WRONLY)) == -1) 
+    {
         std::cerr << "Cannot open file\t" << args_cmd.outputFilePath << std::endl;
-        exit(-1);
     }
-    if(write(output, outputText, inputSize) != inputSize)
-        std:: cerr << "Write Error" << std:: endl;
+    else
+    {
+        if(write(output, outputText, inputSize) != inputSize)
+            std:: cerr << "Write Error" << std:: endl;
 
-    close(output);
+        close(output);
+    }
+
     pthread_barrier_destroy(&barrier);
 
 
