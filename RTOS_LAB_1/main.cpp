@@ -85,16 +85,31 @@ void* crypt(void * cryptParametrs)
     return nullptr;
 }
 
-void clear_memory(char* outputText, char* msg)
+void clear_memory(char* outputText, char* msg, char* random_subsequence)
 {
     delete[] outputText;
     delete[] msg;
+
+    if (random_subsequence != nullptr)
+        delete[] random_subsequence;
 }
 
 int main (int argc, char **argv) 
 {
+    if (argc == 1)
+    {
+        std:: cout << "args not found" << std:: endl;
+        exit(-1);
+    }
+    if (argc != 13)
+    {
+        std:: cout << "count args error" << std:: endl;
+        exit(-1);
+    }
+
     std:: cout << start_separator << std:: endl;
     std:: cout << separator << std:: endl;
+
     int c;
     cmdArgs args_cmd;
     while ((c = getopt(argc, argv, "i:o:a:c:x:m:")) != -1) 
@@ -138,7 +153,7 @@ int main (int argc, char **argv)
                     break;
                 }
             case '?':
-                break;
+                break;  
             default:
                 std:: cout << "?? getopt returned character code 0 ??\t" << c << std:: endl;
         }
@@ -149,11 +164,12 @@ int main (int argc, char **argv)
         while (optind < argc)
             std:: cout << argv[optind++] << '\t';
         std:: cout << std:: endl;
+        exit(-1);
     }
 
     std:: cout << separator << std:: endl; 
 
-    int inputFile = open(args_cmd.inputFilePath, O_RDONLY);
+     int inputFile = open(args_cmd.inputFilePath, O_RDONLY);
     if (inputFile == -1)
     {
         std::cerr << "Unable to open " << args_cmd.inputFilePath << " file\n";
@@ -184,7 +200,7 @@ int main (int argc, char **argv)
     
     std:: cout << separator << std:: endl;
 
-    char* random_subsequence;
+    char* random_subsequence = nullptr;
     char* outputText = new char[inputSize];
     char* msg = new char[inputSize]; // text buffer
 
@@ -195,7 +211,7 @@ int main (int argc, char **argv)
     if(read(inputFile, msg, inputSize) == -1)
     {
         std::cerr << "Can't read to buffer";
-        clear_memory(outputText, msg);
+        clear_memory(outputText, msg, random_subsequence);
         exit(-1);
     }
 
@@ -216,7 +232,7 @@ int main (int argc, char **argv)
     if (pthread_create(&keyGenThread, NULL, lkg, &lkgParam) != 0)
     {
         std::cerr << "Unable to create a new thread";
-        clear_memory(outputText, msg);
+        clear_memory(outputText, msg, random_subsequence);
         exit(-1);
     }
 
@@ -224,7 +240,7 @@ int main (int argc, char **argv)
     if(random_subsequence_thread_status != 0)
     {
         std::cerr << "Unable to join random_subsequence thread. Error code: " << random_subsequence_thread_status;
-        clear_memory(outputText, msg);
+        clear_memory(outputText, msg, random_subsequence);
         exit(-1);
     }
 
@@ -262,7 +278,7 @@ int main (int argc, char **argv)
 
     if (status != 0 && status != PTHREAD_BARRIER_SERIAL_THREAD) 
     {
-        clear_memory(outputText, msg);
+        clear_memory(outputText, msg, random_subsequence);
         for (auto & _worker : workers) 
         {
             delete _worker;
@@ -286,9 +302,7 @@ int main (int argc, char **argv)
     pthread_barrier_destroy(&barrier);
 
 
-    delete[] random_subsequence;
-    delete[] outputText;
-    delete[] msg;
+    clear_memory(outputText, msg, random_subsequence);
 
     for (auto & _worker : workers) 
     {
