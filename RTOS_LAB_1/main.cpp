@@ -85,6 +85,12 @@ void* crypt(void * cryptParametrs)
     return nullptr;
 }
 
+void clear_memory(char* outputText, char* msg)
+{
+    delete[] outputText;
+    delete[] msg;
+}
+
 int main (int argc, char **argv) 
 {
     std:: cout << start_separator << std:: endl;
@@ -178,7 +184,7 @@ int main (int argc, char **argv)
     
     std:: cout << separator << std:: endl;
 
-    char* random_subsequence;// = new char[inputSize]; 
+    char* random_subsequence;
     char* outputText = new char[inputSize];
     char* msg = new char[inputSize]; // text buffer
 
@@ -189,6 +195,7 @@ int main (int argc, char **argv)
     if(read(inputFile, msg, inputSize) == -1)
     {
         std::cerr << "Can't read to buffer";
+        clear_memory(outputText, msg);
         exit(-1);
     }
 
@@ -209,6 +216,7 @@ int main (int argc, char **argv)
     if (pthread_create(&keyGenThread, NULL, lkg, &lkgParam) != 0)
     {
         std::cerr << "Unable to create a new thread";
+        clear_memory(outputText, msg);
         exit(-1);
     }
 
@@ -216,6 +224,7 @@ int main (int argc, char **argv)
     if(random_subsequence_thread_status != 0)
     {
         std::cerr << "Unable to join random_subsequence thread. Error code: " << random_subsequence_thread_status;
+        clear_memory(outputText, msg);
         exit(-1);
     }
 
@@ -251,7 +260,13 @@ int main (int argc, char **argv)
 
     int status = pthread_barrier_wait(&barrier);
 
-    if (status != 0 && status != PTHREAD_BARRIER_SERIAL_THREAD) {
+    if (status != 0 && status != PTHREAD_BARRIER_SERIAL_THREAD) 
+    {
+        clear_memory(outputText, msg);
+        for (auto & _worker : workers) 
+        {
+            delete _worker;
+        }
         exit(status);
     }
 
