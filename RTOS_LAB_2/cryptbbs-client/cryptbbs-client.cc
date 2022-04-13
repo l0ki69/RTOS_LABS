@@ -9,7 +9,7 @@
 #define SEED 866
 #define P  3
 #define Q  263
-#define VECTOR_SIZE 20
+#define VECTOR_SIZE 1024
 
 bool stop_signal = false;
 
