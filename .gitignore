@@ -8,6 +8,10 @@ smth*
 *.d
 
 # Object files
+*.mk
+Makefile
+.*
+*x86*
 *.o
 *.ko
 *.obj
