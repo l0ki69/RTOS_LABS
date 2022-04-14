@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
         	counter = 0;
 
 		psp_vector.at(counter) = elem;
-        sleep(1);
+        sleep(5);
         // Для удобного тестирования лучше поставить sleep(5) секуд
     }
 

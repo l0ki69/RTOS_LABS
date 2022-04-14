@@ -13,7 +13,10 @@
 #include <devctl.h>
 #include <string.h>
 #include <sys/neutrino.h>
+#include <mutex>
 
+std::mutex mut;
+std::unique_lock<std::mutex> unique_mut(mut, std::defer_lock);
 
 static resmgr_connect_funcs_t    connect_funcs;
 static resmgr_io_funcs_t         io_funcs;
@@ -36,7 +39,7 @@ std::uint32_t getElement(std::uint32_t client_id){
 	bool bit = false;
 	std::uint32_t place= 1;
 	//std:: cout << "client_id = \t" << client_id << "\ncontexts[client_id]->param->p = \t" << contexts[client_id]->param->p  << "\t" << contexts[client_id]->param << std::endl;
-
+	unique_mut.lock();
 	for(unsigned int i = 0; i < count_bits; i++)
 	{
 		NewElement = contexts[client_id]->LastElement * contexts[client_id]->LastElement % (contexts[client_id]->param->p * contexts[client_id]->param->q);
@@ -45,20 +48,23 @@ std::uint32_t getElement(std::uint32_t client_id){
 		contexts[client_id]->LastElement = NewElement;
 		place = place * 2;
 	}
-
+	unique_mut.unlock();
 	return CyphElement;
 }
 
 int io_open (resmgr_context_t * ctp , io_open_t * msg , RESMGR_HANDLE_T * handle , void * extra )
 {
+	unique_mut.lock();
 	contexts[ctp->info.scoid] = new Params();
 	contexts[ctp->info.scoid]->param = new bbs::BBSParams();
+	unique_mut.unlock();
 	std::cout << "CLIENT:\t" << ctp->info.scoid << "\tCONNECTED\n";
 	return (iofunc_open_default (ctp, msg, handle, extra));
 }
 
 int io_close(resmgr_context_t *ctp, io_close_t *msg, iofunc_ocb_t *ocb)
 {
+	unique_mut.lock();
 	std::map <std::int32_t, Params*> :: iterator _cell;
 	_cell = contexts.find(ctp->info.scoid);
 	if (contexts.count(ctp->info.scoid))
@@ -70,7 +76,7 @@ int io_close(resmgr_context_t *ctp, io_close_t *msg, iofunc_ocb_t *ocb)
 	}
 	else
 		std::cout << "CLIENT = \t" << ctp->info.scoid << " not found" << std::endl;
-
+	unique_mut.unlock();
 	return (iofunc_close_dup_default(ctp, msg, ocb));
 }
 
@@ -89,12 +95,14 @@ int io_devctl(resmgr_context_t *ctp, io_devctl_t *msg, iofunc_ocb_t *ocb) {
 	{
 		case SET_GEN_PARAMS:
 		{
+			unique_mut.lock();
 			std::cout << "SET_GEN_PARAMS:\tclient_id = \t" << client_id << std::endl;
 			bbs::BBSParams* temp_param = reinterpret_cast<bbs::BBSParams*> (rx_data);
 			contexts[client_id]->param->p = temp_param->p;
 			contexts[client_id]->param->q = temp_param->q;
 			contexts[client_id]->param->seed = temp_param->seed;
 			contexts[client_id]->LastElement= contexts[client_id]->param->seed;
+			unique_mut.unlock();
 			break;
 		}
 		case GET_ELEMENT:
