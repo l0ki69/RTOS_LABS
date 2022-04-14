@@ -61,10 +61,16 @@ int io_close(resmgr_context_t *ctp, io_close_t *msg, iofunc_ocb_t *ocb)
 {
 	std::map <std::int32_t, Params*> :: iterator _cell;
 	_cell = contexts.find(ctp->info.scoid);
-	delete contexts[ctp->info.scoid]->param;
-	delete contexts[ctp->info.scoid];
-	contexts.erase(_cell);
-	std::cout << "CLIENT:\t" << ctp->info.scoid << "\tCLOSE\n";
+	if (contexts.count(ctp->info.scoid))
+	{
+		delete contexts[ctp->info.scoid]->param;
+		delete contexts[ctp->info.scoid];
+		contexts.erase(_cell);
+		std::cout << "CLIENT:\t" << ctp->info.scoid << "\tCLOSE\n";
+	}
+	else
+		std::cout << "CLIENT = \t" << ctp->info.scoid << " not found" << std::endl;
+
 	return (iofunc_close_dup_default(ctp, msg, ocb));
 }
 

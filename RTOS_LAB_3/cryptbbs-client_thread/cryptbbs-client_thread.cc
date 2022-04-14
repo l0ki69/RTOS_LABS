@@ -7,7 +7,7 @@
 #include <vector>
 
 #define SEED 866
-#define P  5
+#define P  3
 #define Q  263
 #define VECTOR_SIZE 1024
 //#define VECTOR_SIZE 10 // test size
@@ -59,12 +59,9 @@ int main(int argc, char **argv) {
         counter++;
 
         if (counter == VECTOR_SIZE)
-        {
         	counter = 0;
-        	psp_vector.at(counter) = elem;
-        }
-        else
-        	psp_vector.at(counter) = elem;
+
+		psp_vector.at(counter) = elem;
         sleep(1);
         // Для удобного тестирования лучше поставить sleep(5) секуд
     }
