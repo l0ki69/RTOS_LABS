@@ -58,12 +58,9 @@ int main(int argc, char **argv) {
         counter++;
 
         if (counter == VECTOR_SIZE)
-        {
-        	counter = 0;
-        	psp_vector.at(counter) = elem;
-        }
-        else
-        	psp_vector.at(counter) = elem;
+		counter = 0;
+	
+	psp_vector.at(counter) = elem;
     }
 
     std::cout << "Output vector" << std::endl;
